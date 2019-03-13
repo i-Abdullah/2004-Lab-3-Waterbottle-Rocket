@@ -58,7 +58,7 @@ maxp = 50*6894.76 ;
 maxs = 1;
 j = 1;
 
-for i = 1:1:maxi
+for i = 5:1:maxi
     
     for k = 0.0001:0.0001:maxk
         
@@ -93,7 +93,7 @@ maxR=Results(h-1,6)+(0-Results(h-1,7))/m;
 
 
 
-                Range_results(1,j) = maxR;
+                Range_results(j,1) = maxR;
                 Conditions(j,:) = [ i k p s ] ;
                     
                 j = j +1;
@@ -106,3 +106,15 @@ maxR=Results(h-1,6)+(0-Results(h-1,7))/m;
     end
     
 end
+
+
+%% printout results;
+
+[ r c ] = find(max(Range_results)) ;
+
+
+fprintf('Your maximum range is %0.3f \n', max(Range_reults));
+fprintf('angle (deg): %0.3f \n', Conditions(r,1));
+fprintf('Water Volume (m^3): %0.3f \n', Conditions(r,2));
+fprintf('Gage pressure (Pa): %0.3f \n', Conditions(r,3));
+fprintf('Coeff of drag: %0.3f \n', Conditions(r,4));
