@@ -70,16 +70,6 @@ Vwz = 0 ;
 
 
 
-global t2 t1 t3
-%globals are where the time of each phase ends, so last elment in t1 is
-%where phase 1 ends, so on.
-
-%% assign golbals:
-
-% just to track the time of each state, not really used.
-t1 = [0];
-t2 = [0];
-t3 = [0];
 %% 
 
 %initial conditions for ode:

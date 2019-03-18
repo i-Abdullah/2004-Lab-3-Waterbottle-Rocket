@@ -44,9 +44,6 @@ function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pam
 % instantaneously, and static air around the rocket.
 
 
-% PREDEFINE Constants:
-
-global t2 t1 t3
 
 %% Phase 1: 
 
@@ -87,7 +84,6 @@ DMass_Dt = - Cd .* ThroatArea .* sqrt ( 2.*RhoWater.* ( Pressure - Pamb ) );
 
 
 derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
-t1 = [ t1 ; [Time] ];
 %% Phase 2:
 
 elseif States(3)>= Volbottle
@@ -139,7 +135,6 @@ dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
 
 
 derivatives = [ MassRocketFlowRate; -MassAirFlowRate; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
-t2 = [ t2 ; Time ];
 
 
 %% Phase 3: 
@@ -160,7 +155,6 @@ dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
 
 
 derivatives = [ 0; 0; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
-t3 = [ t3 ; Time ];
 
 end
 
