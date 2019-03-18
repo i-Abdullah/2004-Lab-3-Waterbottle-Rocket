@@ -24,6 +24,7 @@ function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pam
 % 5- Velocity z;
 % 6- Range (X location);
 % 7- Height (Z location);
+% 8- Velocity y: 
 % 
 %
 %
@@ -57,6 +58,7 @@ if sqrt((States(6)^2)+(States(7)-y0)^2) <= TestStandLength
     TotalVeloc = sqrt( (States(5).^2) + (States(4).^2) );
     HeadingX = cosd(Theta);
     HeadingZ = sind(Theta);
+    HeadingY = 0;
 else
     TotalVeloc = sqrt( (States(5).^2) + (States(4).^2) );
     HeadingX = States(4)/TotalVeloc;
