@@ -64,9 +64,9 @@ PayLoad = 0 ;
 Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
-Vwx = 0 ;
-Vwy = 0 ;
-Vwz = 0 ;
+Vwx = 1 ;
+Vwy = 2 ;
+Vwz = 1 ;
 
 
 
