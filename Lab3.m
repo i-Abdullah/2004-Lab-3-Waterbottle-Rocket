@@ -35,6 +35,7 @@ close all;
 
 %% inital conditions 
 
+% updated conditions:
 
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
@@ -59,8 +60,15 @@ TestStandLength= 0.5; % in m, length of test stand
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
 BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
-TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+PayLoad = 0 ;
+Fins = 0 ;
+TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
+Vwx = 0 ;
+Vwy = 0 ;
+Vwz = 0 ;
+
+
 
 global t2 t1 t3
 %globals are where the time of each phase ends, so last elment in t1 is
@@ -83,8 +91,8 @@ Height0 = y0;
 
 %Stop = odeset('Events',HitGround);
 % Call ODE
-[ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 5],[TotalMass0 MassAirInit...
-VAirInit VelX0 VelZ0 Range0 y0 ]);
+[ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 Range0 y0 0 ]);
 
 
 
