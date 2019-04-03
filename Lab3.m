@@ -55,18 +55,27 @@ TAirInit = 300; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
 Theta= 43.1 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
-y0 = 0.25; % in m, initial vertical height
+z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
 BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
-PayLoad = 0 ;
-Fins = 0 ;
+PayLoad = 25*10^-3 ;
+Fins = 10*10^-3 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
-Vwx = 1 ;
-Vwy = 2 ;
-Vwz = 1 ;
+
+%% velocity of the wind as initial conditions
+
+% x y z respectively:
+
+%x = downrange.
+%z = height.
+%y = cross range.
+
+Vwx = 0 ;
+Vwy = 0 ;
+Vwz = 0 ;
 
 
 
@@ -76,13 +85,16 @@ Vwz = 1 ;
 
 VelX0 = 0;
 VelZ0 = 0;
+VelY0 = 0;
+
 Range0 = 0;
-Height0 = y0;
+Height0 = z0;
+depth0 = 0; %intial condition for location into the page
 
 %Stop = odeset('Events',HitGround);
 % Call ODE
-[ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
-VAirInit VelX0 VelZ0 Range0 y0 0 ]);
+[ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 Range0 z0 VelY0 depth0 ]);
 
 
 
@@ -207,6 +219,34 @@ ylabel('Height (m)')
 legend('Rocket trajectory','Max Height','Max Range','Location','NorthWest')
 
 MaxHeight = max(Results(:,7));
+
+
+%% consider 3d plotting after adjusting velocities of wind and made it 3d
+
+figure(3) ; 
+
+plot3(Results(:,6),Results(:,9),Results(:,7),'-','Color',[1 0.5 0.2],'LineWidth',1.4)
+hold on
+cord1 = [ -5 -50 0 ];
+cord2 = [ -5 50 0 ];
+cord3 = [ 100 50 0 ];
+cord4 = [ 100 -50 0 ];
+
+points = [ cord1' cord2' cord3' cord4' ];
+fill3(points(1,:),points(2,:),points(3,:),'g')
+alpha(0.2)
+
+grid on
+
+
+xlabel('Downrange(m)')
+ylabel('Crossrange(m)')
+zlabel('Height (m)')
+view([-30 45]) 
+
+title('3D Flight path')
+
+
 
 %% for future devlopments, ignore.
 

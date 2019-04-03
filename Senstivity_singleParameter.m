@@ -33,19 +33,22 @@ DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.5; % drag coefficient
-Pgage= 50*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+Pgage= 66.5*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
 VWaterInit= 0.001; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 45 ; % initial angle of rocket in degress
+Theta= 43.1 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
-y0 = 0.25; % in m, initial vertical height
+z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
 BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
-TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+PayLoad = 25*10^-3 ;
+Fins = 10*10^-3 ;
+TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
+
 
 %% Numerical integration.
 
@@ -56,15 +59,15 @@ MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 VelX0 = 0;
 VelZ0 = 0;
 Range0 = 0;
-Height0 = y0;
+Height0 = z0;
 x=[];
 ymax=[];
 xmax=[];
 
 %run ODE45 for all values of theta 1 to 90
 for i=1:90
-    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,i,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 6],[TotalMass0 MassAirInit...
-    VAirInit VelX0 VelZ0 Range0 y0 ]);
+    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,i,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 6],[TotalMass0 MassAirInit...
+    VAirInit VelX0 VelZ0 Range0 z0 ]);
     %add the values for theta into the x array
     x=cat(1,x,i);
     %find max height and add to y array

@@ -1,4 +1,4 @@
-function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz)
+function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz)
 % This's the ODE45 function for analyzing the water bottle rocket.
 %    Done by:
 %            1- Brendan Palmer, id : 108102169
@@ -22,9 +22,10 @@ function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pam
 % 3- Volume of Air;
 % 4- Velocity x;
 % 5- Velocity z;
-% 6- Range (X location);
+% 6- downrange (X location);
 % 7- Height (Z location);
 % 8- Velocity y: 
+% 9- Crossrange (Y location);
 % 
 %
 %
@@ -51,7 +52,7 @@ if States(3) < Volbottle
     
 
 % Check if we still on stand or left:
-if sqrt((States(6)^2)+(States(7)-y0)^2) <= TestStandLength
+if sqrt((States(6)^2)+(States(7)-z0)^2) <= TestStandLength
     %TotalVeloc = sqrt( (States(5).^2) + (States(4).^2) + (States(8).^2) );
     TotalVeloc = [ States(4) - Vwx ; States(5) - Vwz ; States(8) - Vwy ] ;
     HeadingX = cosd(Theta);
@@ -83,7 +84,7 @@ DVolume_Dt = Cd * ThroatArea * sqrt ( (2/RhoWater) * ( ( (Pgage+Pamb) * (( VAirI
 DMass_Dt = - Cd .* ThroatArea .* sqrt ( 2.*RhoWater.* ( Pressure - Pamb ) );
 
 
-derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
+derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
 %% Phase 2:
 
 elseif States(3)>= Volbottle
@@ -134,7 +135,7 @@ dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
 
 
 
-derivatives = [ MassRocketFlowRate; -MassAirFlowRate; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
+derivatives = [ MassRocketFlowRate; -MassAirFlowRate; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
 
 
 %% Phase 3: 
@@ -154,7 +155,7 @@ dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - States(1)*g ) ./ States(1) ;
 dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
 
 
-derivatives = [ 0; 0; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ] ;
+derivatives = [ 0; 0; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
 
 end
 
