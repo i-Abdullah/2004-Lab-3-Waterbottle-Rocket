@@ -15,7 +15,7 @@ and change trajectory.
 Givens: Needed x displacement of the rocket. Derivatives modeling change in
 mass, pressure, volume, and velocity
 
-Required: Determine the launch angle, , and bottle rocket dimensions to
+Required: Determine the launch angle, and bottle rocket dimensions to
 reach a particular distance.
 
 Assumptions: Expansion of air is isentropic, no change of rocket deflection
@@ -24,6 +24,14 @@ instantaneously, and static air around the rocket.
 
 
 ASEN 2012, Fall 18.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+For ASEN 2004: Vehicle Design:
+
+3D simulations are included. 
+
+
 %}
 
 %% houskeeping
@@ -87,14 +95,14 @@ VelX0 = 0;
 VelZ0 = 0;
 VelY0 = 0;
 
-Range0 = 0;
-Height0 = z0;
-depth0 = 0; %intial condition for location into the page
+x0 = 0;
+z0 = z0;
+y0 = 0; %intial condition for location into the page
 
-%Stop = odeset('Events',HitGround);
+Opts = odeset('Events',@HitGround);
 % Call ODE
-[ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
-VAirInit VelX0 VelZ0 Range0 z0 VelY0 depth0 ]);
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
 
 
 
@@ -180,10 +188,10 @@ end
 %% plot thrust:
 
 figure(1);
-plot([TP1 TP2 TP3],[Thrust1 Thrust2 Thrust3],'Color',[1 0.5 0.2],'LineWidth',1.4)
+plot([TP1 TP2 TP3],[Thrust1 Thrust2 Thrust3],'Color',[0.25 0.25 0.25],'LineWidth',1.4)
 hold on
-plot(TP1(end),Thrust1(end),'*','Color',[ 0 0.5 0],'MarkerSize',7,'MarkerFaceColor',[0 0.5 0])
-plot(TP2(end),Thrust2(end),'*','Color',[0.2 0 0],'MarkerSize',7,'MarkerFaceColor',[0.2 0 0])
+plot(TP1(end),Thrust1(end),'o','Color',[ 0 0.5 0],'MarkerSize',7,'MarkerFaceColor',[0 0.5 0])
+plot(TP2(end),Thrust2(end),'o','Color',[1 0 0],'MarkerSize',7,'MarkerFaceColor',[1 0 0])
 xlim([0 TP3(floor(length(TP3)/4))])
 grid minor
 title('Thrust VS Time')
@@ -191,41 +199,32 @@ xlabel('Time (Seconds)')
 ylabel('Thrust (N)')
 legend('Thrust profile','End of Water Phase','End of Air Phase','Location','NorthEast')
 
-%% plot range and height
+
+%% plot height and range:
 
 figure(2);
-plot(Results(:,6),Results(:,7),'-','Color',[1 0.5 0.2],'LineWidth',1.4)
+plot(Results(:,7),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',1.4)
 hold on
-LocationOFmax = Results((find(Results(:,7)==max(Results(:,7)))),6);
-plot(LocationOFmax,max(Results(:,7)),'*','Color',[ 0 0.5 0],'MarkerSize',7,'MarkerFaceColor',[0 0.5 0])
-text(LocationOFmax+0.5,max(Results(:,7))+0.5, ['Max Height =' num2str(max(Results(:,7))) 'm']);
-j=1;
-%find where y value is first negative
-while Results(j,7)>0
-    j=j+1;
-end
-%interpolate max distance
-m=(Results(j,7)-Results(j-1,7))/(Results(j,6)-Results(j-1,6));
-%concatinate the max distance with max distance for specific theta
-xmax=Results(j-1,6)+(0-Results(j-1,7))/m;
-plot(xmax,0,'*','Color',[0.2 0 0],'MarkerSize',7,'MarkerFaceColor',[0.2 0 0])
-text(xmax-21,0.5, ['Max Range =' num2str(xmax) 'm']);
-ylim([0 floor(max(Results(:,7)))+3])
-xlim([0 floor(xmax)+3])
+
+MaxHeight = find(Results(:,8)==max(Results(:,8)),7);
+plot(Results(MaxHeight,7),max(Results(:,8)),'o','Color',[ 0 0.5 0],'MarkerSize',7,'MarkerFaceColor',[0 0.5 0])
+text(Results(MaxHeight,7)+0.5,max(Results(:,8))+0.5, ['Max Height =' num2str(max(Results(:,8))) 'm']);
+
+plot(Results(end,7),0,'o','Color',[1 0 0],'MarkerSize',7,'MarkerFaceColor',[1 0 0])
+text(Results(end,7)-21,0.5, ['Max Range =' num2str(Results(end,7)) 'm']);
+ylim([0 floor(max(Results(:,8)))+3])
+xlim([0 floor(Results(end,7))+3])
 grid minor
 title('Range vs Height')
 xlabel('Range (m)')
 ylabel('Height (m)')
 legend('Rocket trajectory','Max Height','Max Range','Location','NorthWest')
 
-MaxHeight = max(Results(:,7));
-
-
 %% consider 3d plotting after adjusting velocities of wind and made it 3d
 
 figure(3) ; 
 
-plot3(Results(:,6),Results(:,9),Results(:,7),'-','Color',[1 0.5 0.2],'LineWidth',1.4)
+plot3(Results(:,7),Results(:,9),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',1.4)
 hold on
 cord1 = [ -5 -50 0 ];
 cord2 = [ -5 50 0 ];

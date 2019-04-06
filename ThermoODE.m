@@ -16,7 +16,7 @@ function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pam
 %
 %   derivatives : The derivatives of the states.
 %
-% --------- (States In order)------------------
+% --------- (States In order (OLD!! CHECK NEW BELOW!!)------------------
 % 1- Mass of rocket;
 % 2- Mass of Air
 % 3- Volume of Air;
@@ -43,64 +43,92 @@ function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pam
 % Assumptions: Expansion of air is isentropic, no change of rocket deflection
 % (in y- direction), rocket adjusts flight path to match the heading
 % instantaneously, and static air around the rocket.
+%
+%
+% --------- ( UPDATED ORDER OF STATES )------------------
+% 1- Mass of rocket;
+% 2- Mass of Air
+% 3- Volume of Air;
+% 4- Velocity x;
+% 5- Velocity z;
+% 6- Velocity y;
+% 7- downrange (X location);
+% 8- Height (Z location);
+% 9- Crossrange (Y location);
 
+
+%% define states:
+
+
+
+RocketMass = States(1);
+AirMass = States(2);
+AirVolume = States(3);
+
+dxdt = States(4);
+dzdt = States(5);
+dydt = States(6);
+
+x = States(7);
+z = States(8);
+y = States(9);
 
 
 %% Phase 1: 
 
-if States(3) < Volbottle
+if AirVolume < Volbottle
     
 
 % Check if we still on stand or left:
-if sqrt((States(6)^2)+(States(7)-z0)^2) <= TestStandLength
-    %TotalVeloc = sqrt( (States(5).^2) + (States(4).^2) + (States(8).^2) );
-    TotalVeloc = [ States(4) - Vwx ; States(5) - Vwz ; States(8) - Vwy ] ;
+if sqrt((x^2)+(z-z0)^2) <= TestStandLength
+    %TotalVeloc = sqrt( (dzdt.^2) + (dxdt.^2) + (dydt.^2) );
+    TotalVeloc = [ dxdt - Vwx ; dzdt - Vwz ; dydt - Vwy ] ;
     HeadingX = cosd(Theta);
     HeadingZ = sind(Theta);
     HeadingY = 0;
 else
-    TotalVeloc = [ States(4) - Vwx ; States(5) - Vwz ; States(8) - Vwy ] ;
+    TotalVeloc = [ dxdt - Vwx ; dzdt - Vwz ; dydt - Vwy ] ;
     HeadingX = TotalVeloc(1)/norm(TotalVeloc);
     HeadingZ = TotalVeloc(2)/norm(TotalVeloc);
     HeadingY = TotalVeloc(3)/norm(TotalVeloc);
 end
 
-Pressure = ( ( VAirInit ./ States(3) ) .^ GammaGas ) .* (Pgage+Pamb) ; 
+Pressure = ( ( VAirInit ./ AirVolume ) .^ GammaGas ) .* (Pgage+Pamb) ; 
 Thrust = 2.* Cd .* ThroatArea .* ( Pressure - Pamb) ;
 Drag = ( Rhoairamb / 2) .* (norm(TotalVeloc)).^2 * CD*BottleArea; 
 
 % Define Derivatives
 
 % Accelration in x and Z
-dadt_X = ( (Thrust - Drag) * HeadingX) ./ States(1) ;
-dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - States(1)*g ) ./ States(1) ;
-dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ; 
+dadt_X = ( (Thrust - Drag) * HeadingX) ./ RocketMass ;
+dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - RocketMass*g ) ./ RocketMass ;
+dadt_Y = ( (Thrust - Drag) * HeadingY) ./ RocketMass ; 
 
 
 %Volume (how volume changes with time)
-DVolume_Dt = Cd * ThroatArea * sqrt ( (2/RhoWater) * ( ( (Pgage+Pamb) * (( VAirInit/States(3) ) ^ (GammaGas))) - Pamb ));
+DVolume_Dt = Cd * ThroatArea * sqrt ( (2/RhoWater) * ( ( (Pgage+Pamb) * (( VAirInit/AirVolume ) ^ (GammaGas))) - Pamb ));
 
 %Mass (how mass of Rocket changes with time, it's )
 DMass_Dt = - Cd .* ThroatArea .* sqrt ( 2.*RhoWater.* ( Pressure - Pamb ) );
 
 
-derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
+derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; dadt_Y ; dxdt ; dzdt ; dydt ] ;
 %% Phase 2:
 
-elseif States(3)>= Volbottle
+elseif AirVolume>= Volbottle
 %T and P of end states
 Tend = TAirInit * (( VAirInit/Volbottle) ^ (GammaGas-1) );
 Pend = (Pgage+Pamb) * (( VAirInit/Volbottle) ^ (GammaGas) );
 
-    TotalVeloc = [ States(4) - Vwx ; States(5) - Vwz ; States(8) - Vwy ] ;
+    TotalVeloc = [ dxdt - Vwx ; dzdt - Vwz ; dydt - Vwy ] ;
     HeadingX = TotalVeloc(1)/norm(TotalVeloc);
     HeadingZ = TotalVeloc(2)/norm(TotalVeloc);
     HeadingY = TotalVeloc(3)/norm(TotalVeloc);
     
-PressureCond = Pend * (States(2)/MassAirInit)^(GammaGas) ;
+PressureCond = Pend * (AirMass/MassAirInit)^(GammaGas) ;
 
 if PressureCond>Pamb
-Density = States(2) / Volbottle;
+Density = AirMass / Volbottle;
 Temp = PressureCond/(Density*R);
 CriticalP = (PressureCond) * (2./(GammaGas+1)).^(GammaGas/(GammaGas-1));
   
@@ -129,20 +157,20 @@ MassRocketFlowRate = -MassAirFlowRate;
 Thrust = MassAirFlowRate *Vexit + (Pexit-Pamb)*ThroatArea ;
 Drag = ( Rhoairamb / 2) .* (norm(TotalVeloc)).^2 * CD*BottleArea; 
 
-dadt_X = ( (Thrust - Drag) * HeadingX) ./ States(1) ;
-dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - States(1)*g ) ./ States(1) ;
-dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
+dadt_X = ( (Thrust - Drag) * HeadingX) ./ RocketMass ;
+dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - RocketMass*g ) ./ RocketMass ;
+dadt_Y = ( (Thrust - Drag) * HeadingY) ./ RocketMass ;
 
 
 
-derivatives = [ MassRocketFlowRate; -MassAirFlowRate; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
+derivatives = [ MassRocketFlowRate; -MassAirFlowRate; 0; dadt_X; dadt_Z; dadt_Y; dxdt ; dzdt; dydt ] ;
 
 
 %% Phase 3: 
 
 else
 
-    TotalVeloc = [ States(4) - Vwx ; States(5) - Vwz ; States(8) - Vwy ] ;
+    TotalVeloc = [ dxdt - Vwx ; dzdt - Vwz ; dydt - Vwy ] ;
     HeadingX = TotalVeloc(1)/norm(TotalVeloc);
     HeadingZ = TotalVeloc(2)/norm(TotalVeloc);
     HeadingY = TotalVeloc(3)/norm(TotalVeloc);
@@ -150,12 +178,12 @@ else
 Thrust = 0 ;
 Drag = ( Rhoairamb / 2) .* (norm(TotalVeloc)).^2 * CD*BottleArea; 
 
-dadt_X = ( (Thrust - Drag) * HeadingX) ./ States(1) ;
-dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - States(1)*g ) ./ States(1) ;
-dadt_Y = ( (Thrust - Drag) * HeadingY) ./ States(1) ;
+dadt_X = ( (Thrust - Drag) * HeadingX) ./ RocketMass ;
+dadt_Z =  ( ((Thrust - Drag) * HeadingZ) - RocketMass*g ) ./ RocketMass ;
+dadt_Y = ( (Thrust - Drag) * HeadingY) ./ RocketMass ;
 
 
-derivatives = [ 0; 0; 0; dadt_X; dadt_Z; States(4) ; States(5) ; dadt_Y ; States(8) ] ;
+derivatives = [ 0; 0; 0; dadt_X; dadt_Z; dadt_Y; dxdt ; dzdt ; dydt ] ;
 
 end
 
