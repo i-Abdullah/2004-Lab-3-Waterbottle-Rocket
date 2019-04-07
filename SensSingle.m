@@ -273,3 +273,15 @@ MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
 %% plot derivatives:
 
+figure(2)
+
+subplot(2,2,1)
+plot(dtheta(1:end-1),dx_dtheta)
+hold on;
+plot(dtheta(1:end-1),dz_dtheta)
+legend('Max Range', 'Max Height');
+title('Derivatives of change in \theta');
+xlabel('\theta (degrees)');
+ylabel('Distance (meters)');
+grid minor
+
