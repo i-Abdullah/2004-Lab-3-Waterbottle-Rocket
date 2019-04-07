@@ -57,22 +57,56 @@ DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.5; % drag coefficient
-Pgage= 66.5*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+Pgage= 50*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
 VWaterInit= 0.001; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 43.1 ; % initial angle of rocket in degress
+Theta= 45 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
 z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
 BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
-PayLoad = 25*10^-3 ;
-Fins = 10*10^-3 ;
+PayLoad = 0 ;
+Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
+%% TA'S Launch:
+
+%{
+g = 9.81; % m/s2, acceleration due to gravity,
+Cd= 0.8; % discharge coefficient
+Rhoairamb = 0.961; % kg/m^3 ambient air density
+Volbottle= 0.002; % m^3 volume of empty bottle
+Pamb= 12.1*6894.76; % converted to Pa, atmospheric pressure
+GammaGas = 1.4; % ratio of specific heats for air
+RhoWater = 1000; % kg/m^3, density of water
+DThroat= 2.1; % cm, diameter of throat
+DBottle= 10.5; % in cm, diameter of bottle
+R = 287; %J/kgK, gas constant of air
+MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
+MBottle= 0.17; % kg mass of empty 2-liter bottle with cone and fins
+CD= 0.5; % drag coefficient
+Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+VWaterInit= 0.000962; % m^3, initial volume of water inside bottle
+TAirInit = 300; % K, initial temperature of
+TAirInit = 275.372; % K, initial temperature of
+Airv0 = 0.0 ;% m/s, initial velocity of rocket
+Theta= 45 ; % initial angle of rocket in degress
+X0 = 0.0; % in meters, initial horizontal distance
+z0 = 0.25; % in m, initial vertical height
+TestStandLength= 0.5; % in m, length of test stand
+VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
+ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
+BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
+PayLoad = 0 ;
+Fins = 0 ;
+TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
+
+%}
 %% velocity of the wind as initial conditions
 
 % x y z respectively:

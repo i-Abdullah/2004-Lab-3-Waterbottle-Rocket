@@ -21,6 +21,8 @@ close all;
 %% inital conditions 
 
 
+% updated conditions:
+
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
 Rhoairamb = 0.961; % kg/m^3 ambient air density
@@ -33,63 +35,73 @@ DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.5; % drag coefficient
-Pgage= 66.5*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+Pgage= 50*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
 VWaterInit= 0.001; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 43.1 ; % initial angle of rocket in degress
+Theta= 45 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
 z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 ThroatArea = pi * ((DThroat*10^-2)/2)^2; %Area of throat
 BottleArea  = pi * ((DBottle*10^-2)/2)^2; %Bottle Area
-PayLoad = 25*10^-3 ;
-Fins = 10*10^-3 ;
+PayLoad = 0 ;
+Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
+%% velocity of the wind as initial conditions
 
-%% Numerical integration.
+% x y z respectively:
 
-%% How angel of launch affects max height and range
+%x = downrange.
+%z = height.
+%y = cross range.
 
-%ode initial condition
+Vwx = 0 ;
+Vwy = 0 ;
+Vwz = 0 ;
+
+
+
+%% 
+
+%initial conditions for ode:
 
 VelX0 = 0;
 VelZ0 = 0;
-Range0 = 0;
-Height0 = z0;
-x=[];
-ymax=[];
-xmax=[];
+VelY0 = 0;
+
+x0 = 0;
+z0 = z0;
+y0 = 0; %intial condition for location into the page
+
+Opts = odeset('Events',@HitGround);
+
+
+%% How angel of launch affects max height and range
 
 %run ODE45 for all values of theta 1 to 90
 for i=1:90
-    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,i,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 6],[TotalMass0 MassAirInit...
-    VAirInit VelX0 VelZ0 Range0 z0 ]);
-    %add the values for theta into the x array
-    x=cat(1,x,i);
-    %find max height and add to y array
-    ymax=cat(1,ymax,max(Results(:,7)));
-    %initialize j
-    j=1;
-    %find where y value is first negative
-    while Results(j,7)>0
-        j=j+1;
-    end
-    %interpolate max distance
-    m=(Results(j,7)-Results(j-1,7))/(Results(j,6)-Results(j-1,6));
-    %concatinate the max distance with max distance for specific theta
-    xmax=cat(1,xmax,Results(j-1,6)+(0-Results(j-1,7))/m);
+% Call ODE
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,i,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
+
+Var(i) = i;
+Xmax(i) = Results(end,7); % Max Range;
+Zmax(i) = max(Results(:,8)); % maximum height
+
 end
+
+
 %plot max height and max distance on same plot for each theta
 figure;
 subplot(2,2,1)
-plot(x,ymax)
+plot(Var,Xmax)
 hold on;
-plot(x,xmax)
-legend('Max height', 'Max Range');
+plot(Var,Zmax)
+legend('Max Range', 'Max Height');
 title('\theta vs Max Height and Range');
 xlabel('\theta (degrees)');
 ylabel('Distance (meters)');
@@ -97,144 +109,167 @@ grid minor
 %reset the changing variable
 Theta=45;
 
+% store derivatives to see how the downrange and height changes with
+% respect to the considered variable
+
+dtheta = Var; % store the variables
+dx_dtheta = diff(Xmax); % store X derivatives.
+dz_dtheta = diff(Zmax); % Store Z derivatives
+
+
 %% How coefficient of drag affects max height and range
+
+% clear variable:
+clear Zmax
+clear Xmax
+clear Var
+
 
 %ode initial condition
 
-VelX0 = 0;
-VelZ0 = 0;
-Range0 = 0;
-Height0 = y0;
-x=[];
-ymax=[];
-xmax=[];
-%run ODE45 for all values of drag coefficient to 0 to 1
-for i=0:.001:1
-    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,i,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 6],[TotalMass0 MassAirInit...
-    VAirInit VelX0 VelZ0 Range0 y0 ]);
-    %add the values for drag coefficient into the x array
-    x=cat(1,x,i);
-    %find max height and add to y array
-    ymax=cat(1,ymax,max(Results(:,7)));
-    %initialize j
-    j=1;
-    %find where y value is first negative
-    while Results(j,7)>0
-        j=j+1;
-    end
-    %interpolate max distance
-    m=(Results(j,7)-Results(j-1,7))/(Results(j,6)-Results(j-1,6));
-    %concatinate the max distance with max distance for specific CD
-    xmax=cat(1,xmax,Results(j-1,6)+(0-Results(j-1,7))/m);
+%run ODE45 for all values of CD = 0.1 to 1;
+i = 1; % index
+for j=0.1:0.01:1
+% Call ODE
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,j,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
+
+Var(i) = j;
+Xmax(i) = Results(end,7); % Max Range;
+Zmax(i) = max(Results(:,8)); % maximum height
+i = i+1;
 end
-%plot max height and max distance on same plot for each CD
-%figure;
+
+
+%plot max height and max distance on same plot for each theta
 subplot(2,2,2)
-plot(x,ymax)
+plot(Var,Xmax)
 hold on;
-plot(x,xmax)
-legend('Max height', 'Max Range');
-title('Cefficient of Drag vs Max Height and Range');
-xlabel('Drag Coefficient');
+plot(Var,Zmax)
+legend('Max Range', 'Max Height');
+title('Coefficient of Drag vs Max Height and Range');
+xlabel('Coefficient of Drag');
 ylabel('Distance (meters)');
 grid minor
+%reset the changing variable
 CD=.5;
+
+dCD = Var; % store the variables
+dx_dCD = diff(Xmax); % store X derivatives.
+dz_dCD = diff(Zmax); % Store Z derivatives
+
+
 
 %% How volume of water affects max height and range
 
+
+% clear variable:
+clear Zmax
+clear Xmax
+clear Var
+
+
 %ode initial condition
 
-VelX0 = 0;
-VelZ0 = 0;
-Range0 = 0;
-Height0 = y0;
-x=[];
-ymax=[];
-xmax=[];
-%run ODE45 for all values of volume water to 0 to .002
-for i=.0001:.001:.002
-    %use i to find the volume of air in the bottle
-    VAirInit=Volbottle-i;
-    TotalMass0 = MBottle + (i*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+%run ODE45 for all values of Volume of water of 0.0001 m^3 to 0.002;
+i = 1; % index
+for j=.0001:.001:.002
+% Call ODE
+    VAirInit=Volbottle-j;
+    TotalMass0 = MBottle + (j*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
     MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit));
-    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 6],[TotalMass0 MassAirInit VAirInit VelX0 VelZ0 Range0 y0 ]);
-    %add the values for drag coefficient into the x array
-    x=cat(1,x,i);
-    %find max height and add to y array
-    ymax=cat(1,ymax,max(Results(:,7)));
-    %initialize j
-    j=1;
-    %find where y value is first negative
-    while Results(j,7)>0
-        j=j+1;
-    end
-    %interpolate max distance
-    m=(Results(j,7)-Results(j-1,7))/(Results(j,6)-Results(j-1,6));
-    %concatinate the max distance with max distance for specific CD
-    xmax=cat(1,xmax,Results(j-1,6)+(0-Results(j-1,7))/m);
+
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
+
+Var(i) = j;
+Xmax(i) = Results(end,7); % Max Range;
+Zmax(i) = max(Results(:,8)); % maximum height
+i = i+1;
 end
-%plot max height and max distance on same plot for each CD
-%figure;
+
+
+%plot max height and max distance on same plot for each theta
 subplot(2,2,3)
-plot(x,ymax)
+plot(Var,Xmax)
 hold on;
-plot(x,xmax)
-legend('Max Height', 'Max Range');
-title('Initial Volume Water vs Max Height and Range');
-xlabel('Volume Water Initial (m^3)');
+plot(Var,Zmax)
+legend('Max Range', 'Max Height');
+title('Volume of water vs Max Height and Range');
+xlabel('Volume of water');
 ylabel('Distance (meters)');
 grid minor
+
+
+%reset the changing variable
+
 VWaterInit= 0.001; % m^3, initial volume of water inside bottle
 VAirInit = Volbottle - VWaterInit ; %initial volume of Air.
 TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
+
+% store derivatives to see how the downrange and height changes with
+% respect to the considered variable
+
+dVol = Var; % store the variables
+dx_dVol = diff(Xmax); % store X derivatives.
+dz_dVol = diff(Zmax); % Store Z derivatives
+
 %% How gage pressure affects max height and range
+
+
+% clear variable:
+clear Zmax
+clear Xmax
+clear Var
+
 
 %ode initial condition
 
-y0=.25;
-VelX0 = 0;
-VelZ0 = 0;
-Range0 = 0;
-Height0 = y0;
-x=[];
-ymax=[];
-xmax=[];
-%run ODE45 for all values of gage pressure from 25 to 75 psi
-for i=25:75
-    Pgage= i*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-    TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((i+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
-    MassAirInit = (((i+Pamb)*VAirInit ) / (R*TAirInit));
-    [ Time Results ] = ode45(@(Time,States) RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R), [ 0 5 ],[TotalMass0 MassAirInit...
-    VAirInit VelX0 VelZ0 Range0 y0 ]);
-    %add the values for drag coefficient into the x array
-    x=cat(1,x,i);
-    %find max height and add to y array
-    ymax=cat(1,ymax,max(Results(:,7)));
-    %initialize j
-    j=1;
-    %find where y value is first negative
-    while Results(j,7)>0
-        j=j+1;
-    end
-    %interpolate max distance
-    m=(Results(j,7)-Results(j-1,7))/(Results(j,6)-Results(j-1,6));
-    %concatinate the max distance with max distance for specific CD
-    xmax=cat(1,xmax,Results(j-1,6)+(0-Results(j-1,7))/m);
+%run ODE45 for all values of Volume of water of 0.0001 m^3 to 0.002;
+i = 1; % index
+for j=25:1:70
+% Call ODE
+    Pgage= j*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+    TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+    MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit));
+
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
+
+Var(i) = Pgage;
+Xmax(i) = Results(end,7); % Max Range;
+Zmax(i) = max(Results(:,8)); % maximum height
+i = i+1;
 end
-%plot max height and max distance on same plot for each CD
-%figure;
+
+
+%plot max height and max distance on same plot for each theta
 subplot(2,2,4)
-plot(x,ymax)
+plot(Var,Xmax)
 hold on;
-plot(x,xmax)
-legend('Max Height', 'Max Range');
-title('Pressure vs Max Height and Range');
-xlabel('Pressure (Pa)');
+plot(Var,Zmax)
+legend('Max Range', 'Max Height');
+title('Gage pressure vs Max Height and Range');
+xlabel('Gage pressure (Pa)');
 ylabel('Distance (meters)');
 grid minor
+
+
+% store derivatives to see how the downrange and height changes with
+% respect to the considered variable
+
+dGage = Var; % store the variables
+dx_dGage = diff(Xmax); % store X derivatives.
+dz_dGage = diff(Zmax); % Store Z derivatives
+
+
 %Reset variables
 Pgage=50*6894.76;
 TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
+
+
+%% plot derivatives:
+
