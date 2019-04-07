@@ -130,7 +130,7 @@ legend('Rocket trajectory','Max Height','Max Range','Location','NorthWest')
 
 %% consider 3d plotting after adjusting velocities of wind and made it 3d
 
-figure(2) ; 
+figure(4) ; 
 
 plot3(Results(:,7),Results(:,9),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',1.4)
 hold on
