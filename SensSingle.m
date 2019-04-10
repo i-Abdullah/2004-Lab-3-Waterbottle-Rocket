@@ -4,8 +4,6 @@
 
 %{
 - Done by:
-            1- Brendan Palmer, id : 108102169
-            2- Abdulla AlAmeri id : 109364560
 
 %}
 
@@ -95,19 +93,27 @@ Zmax(i) = max(Results(:,8)); % maximum height
 end
 
 
+% find maximum X_location:
+
 %plot max height and max distance on same plot for each theta
-figure;
-subplot(2,2,1)
-plot(Var,Xmax)
+figure(1);
+
+plot(Var,Xmax,'LineWidth',2)
 hold on;
-plot(Var,Zmax)
-legend('Max Range', 'Max Height');
+plot(Var,Zmax,'LineWidth',2)
+hold on
+plot(Theta,Xmax(find(Var==Theta)),'or','MarkerSize',5,'MarkerFaceColor','r')
+plot(Var(find(max(Xmax)==Xmax)),Xmax(find(max(Xmax)==Xmax)),'go','MarkerSize',5,'MarkerFaceColor','g')
+line([10 10],[0 70],'LineWidth',2,'Color','k','LineStyle',':');
+line([70 70],[0 70],'LineWidth',2,'Color','k','LineStyle',':');
+
+legend('Max Range', 'Max Height',['Baseline=' num2str(Theta) char(176)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax))) char(176)],...
+    'Lowe bound','Upper bound');
 title('\theta vs Max Height and Range');
 xlabel('\theta (degrees)');
 ylabel('Distance (meters)');
 grid minor
-%reset the changing variable
-Theta=45;
+
 
 % store derivatives to see how the downrange and height changes with
 % respect to the considered variable
@@ -142,21 +148,25 @@ end
 
 
 %plot max height and max distance on same plot for each theta
-subplot(2,2,2)
-plot(Var,Xmax)
+figure(2)
+
+plot(Var,Xmax,'LineWidth',2)
 hold on;
-plot(Var,Zmax)
-legend('Max Range', 'Max Height');
+plot(Var,Zmax,'LineWidth',2)
+plot(CD,Xmax(find(Var==CD)),'or','MarkerSize',5,'MarkerFaceColor','r')
+plot(Var(find(max(Xmax)==Xmax)),Xmax(find(max(Xmax)==Xmax)),'go','MarkerSize',5,'MarkerFaceColor','g')
+
+line([0.2 0.2],[0 120],'LineWidth',2,'Color','k','LineStyle',':');
+line([0.9 0.9],[0 120],'LineWidth',2,'Color','k','LineStyle',':');
+
+
+legend('Max Range', 'Max Height',['Baseline=' num2str(CD)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax)))],...
+    'Lowe bound','Upper bound');
 title('Coefficient of Drag vs Max Height and Range');
 xlabel('Coefficient of Drag');
 ylabel('Distance (meters)');
 grid minor
-%reset the changing variable
-CD=.5;
 
-dCD = Var; % store the variables
-dx_dCD = diff(Xmax); % store X derivatives.
-dz_dCD = diff(Zmax); % Store Z derivatives
 
 
 
@@ -173,13 +183,15 @@ clear Var
 
 %run ODE45 for all values of Volume of water of 0.0001 m^3 to 0.002;
 i = 1; % index
-for j=.0001:.001:.002
+
+% WHEN VOLUME INCREASED TO MAX VOLUME OF BOTTLE IT IS NOT WORKING!!
+for j=.0001:.00001:.0013
 % Call ODE
     VAirInit=Volbottle-j;
-    TotalMass0 = MBottle + (j*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
+    TotalMass0 = MBottle + (j*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)) ; % Total mass
     MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit));
-
-[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0 MassAirInit...
+j
+[ Time Results ] = ode45(@(Time,States) ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 40],[TotalMass0 MassAirInit...
 VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
 
 Var(i) = j;
@@ -187,18 +199,6 @@ Xmax(i) = Results(end,7); % Max Range;
 Zmax(i) = max(Results(:,8)); % maximum height
 i = i+1;
 end
-
-
-%plot max height and max distance on same plot for each theta
-subplot(2,2,3)
-plot(Var,Xmax)
-hold on;
-plot(Var,Zmax)
-legend('Max Range', 'Max Height');
-title('Volume of water vs Max Height and Range');
-xlabel('Volume of water');
-ylabel('Distance (meters)');
-grid minor
 
 
 %reset the changing variable
@@ -209,12 +209,30 @@ TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TA
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
 
-% store derivatives to see how the downrange and height changes with
-% respect to the considered variable
+%plot max height and max distance on same plot for each theta
+figure(3)
+plot(Var,Xmax,'LineWidth',2)
+hold on;
+plot(Var,Zmax,'LineWidth',2)
 
-dVol = Var; % store the variables
-dx_dVol = diff(Xmax); % store X derivatives.
-dz_dVol = diff(Zmax); % Store Z derivatives
+plot(VWaterInit,Xmax(find(Var==VWaterInit)),'or','MarkerSize',5,'MarkerFaceColor','r')
+plot(Var(find(max(Xmax)==Xmax)),Xmax(find(max(Xmax)==Xmax)),'go','MarkerSize',5,'MarkerFaceColor','g')
+
+line([1e-4 1e-4],[0 120],'LineWidth',2,'Color','k','LineStyle',':');
+line([1e-3 1e-3],[0 120],'LineWidth',2,'Color','k','LineStyle',':');
+
+
+legend('Max Range', 'Max Height',['Baseline=' num2str(VWaterInit)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax)))],...
+    'Lowe bound','Upper bound');
+
+title('Volume of water vs Max Height and Range');
+xlabel('Volume of water (m^3)');
+ylabel('Distance (meters)');
+grid minor
+
+
+
+
 
 %% How gage pressure affects max height and range
 
@@ -244,44 +262,36 @@ Zmax(i) = max(Results(:,8)); % maximum height
 i = i+1;
 end
 
-
-%plot max height and max distance on same plot for each theta
-subplot(2,2,4)
-plot(Var,Xmax)
-hold on;
-plot(Var,Zmax)
-legend('Max Range', 'Max Height');
-title('Gage pressure vs Max Height and Range');
-xlabel('Gage pressure (Pa)');
-ylabel('Distance (meters)');
-grid minor
-
-
-% store derivatives to see how the downrange and height changes with
-% respect to the considered variable
-
-dGage = Var; % store the variables
-dx_dGage = diff(Xmax); % store X derivatives.
-dz_dGage = diff(Zmax); % Store Z derivatives
-
-
 %Reset variables
 Pgage=50*6894.76;
 TotalMass0 = MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
 
-%% plot derivatives:
 
-figure(2)
+%plot max height and max distance on same plot for each theta
+figure(4)
 
-subplot(2,2,1)
-plot(dtheta(1:end-1),dx_dtheta)
+plot(Var,Xmax,'LineWidth',2)
 hold on;
-plot(dtheta(1:end-1),dz_dtheta)
-legend('Max Range', 'Max Height');
-title('Derivatives of change in \theta');
-xlabel('\theta (degrees)');
+plot(Var,Zmax,'LineWidth',2)
+
+plot(Pgage,Xmax(find(Var==Pgage)),'or','MarkerSize',5,'MarkerFaceColor','r')
+plot(Var(find(max(Xmax)==Xmax)),Xmax(find(max(Xmax)==Xmax)),'go','MarkerSize',5,'MarkerFaceColor','g')
+
+line([2e5 2e5],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
+line([4e5 4e5],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
+
+
+legend('Max Range', 'Max Height',['Baseline=' num2str(Pgage)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax)))],...
+    'Lowe bound','Upper bound');
+
+title('Gage pressure vs Max Height and Range');
+
+xlabel('Gage pressure (Pa)');
 ylabel('Distance (meters)');
+
 grid minor
 
+
+%% How change in temp of fuel changes the? 

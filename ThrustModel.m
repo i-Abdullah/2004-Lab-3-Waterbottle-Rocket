@@ -1,16 +1,13 @@
-%% info:
+%% houskeeping
 
-% Date Created : 20 March, 2019.
+clear;
+clc;
+close all;
 
-% this script attempts to model the trajectory of waterbottle rocket using 
-% specific impulse (Isp) using static test stand data.
-%% housekeeping
 
-clear
-clc
-close all
+%% inital conditions 
 
-%% TA'S Launch: ODE:
+% updated conditions:
 
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
@@ -23,12 +20,10 @@ DThroat= 2.1; % cm, diameter of throat
 DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
-MBottle= 0.17; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.5; % drag coefficient
-Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-VWaterInit= 0.000962; % m^3, initial volume of water inside bottle
+Pgage= 50*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+VWaterInit= 0.001; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
-TAirInit = 275.372; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
 Theta= 45 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
@@ -42,75 +37,68 @@ Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
-%note!!! : total mass does not include water!
-%}
+Mwater_i = (VWaterInit*RhoWater);
 %% velocity of the wind as initial conditions
 
 % x y z respectively:
-
 %x = downrange.
 %z = height.
 %y = cross range.
-
 Vwx = 0 ;
-Vwy = 0 ;
+Vwy = 10 ;
 Vwz = 0 ;
 
-
-%% ISP:
-
-
-data = load('StaticTestData/LA8am_test6') .* 4.44822   ; % to convert to newton
-time = linspace(0,length(data)/1652,length(data));
-
-Mwater = VWaterInit*RhoWater;
-
-
-figure(1)
-
-plot(time,data(:,3),'r.-','LineWidth',0.5)
-[ x y ] = ginput(2);
-[ ix1 iy1 ] = min(abs(time - x(1)));
-[ ix2 iy2 ] = min(abs(time - x(2)));
-
-
-figure(2)
-plot(time(iy1:iy2),data(iy1:iy2,3),'r.-','LineWidth',2)
-area(time(iy1:iy2),data(iy1:iy2,3),'LineStyle','-','FaceAlpha',0.3,'FaceColor','r')
-
-grid minor
-title('Static test force of thrust')
-ylabel('Time (seconds)')
-xlabel('Thrust (N)')
-
-
-ForceIntg = cumtrapz(time(iy1:iy2),data(iy1:iy2,3)) ; %integral of force
-
-Isp = ForceIntg(end) / (Mwater*g) ;
-DV = Isp*g* log(TotalMass0/(PayLoad + Fins + MBottle)) ; % Change in velocity, assumes it's instantaneous.
-
-
-%% ODE45:
-
-
 %initial conditions for ode:
-
-VelX0 = DV*cosd(Theta);
-VelZ0 = DV*sind(Theta);
+VelX0 = 0;
+VelZ0 = 0;
 VelY0 = 0;
 
 x0 = 0;
 z0 = z0;
 y0 = 0; %intial condition for location into the page
 
+
+%% read data:
+
+data = load('StaticTestData/LA8am_test6') .* 4.44822   ; % to convert to newton
+time_test = linspace(0,length(data)/1652,length(data));
+
+% delte the noise and not useful data:
+
+figure(1)
+
+plot(time_test,data(:,3),'r.-','LineWidth',0.5)
+[ x y ] = ginput(2);
+[ ix1 iy1 ] = min(abs(time_test - x(1)));
+[ ix2 iy2 ] = min(abs(time_test - x(2)));
+
+
+
+Thrust_test = data(iy1:iy2,3);
+time_test = time_test(iy1:iy2);
+% zero time
+time_test = time_test - time_test(1) ;
+
+im = 0.00012;
+
+% %find first min:
+% difference = abs(time_test-im);
+% ind1 = find(difference==min(difference));
+% % zero and find the second min:
+% difference(ind1); = [];
+% ind2 = find(difference==min(difference));
+% 
+% Thrust = (Thrust_test(ind1) + Thrust_test(ind) )/2;
+
 Opts = odeset('Events',@HitGround);
 % Call ODE
-[ Time Results ] = ode45(@(Time,States) IspODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz), [ 0 5],[TotalMass0-(VWaterInit*RhoWater) MassAirInit...
+[ Time Results ] = ode45(@(Time,States) ThrustODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz,Thrust_test,time_test), [ 0 5],[TotalMass0 MassAirInit...
 VAirInit VelX0 VelZ0 VelY0 x0 z0 y0 ],Opts);
 
-%% plot
 
-figure(3);
+%% plot height and range:
+
+figure(2);
 plot(Results(:,7),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',1.4)
 hold on
 
@@ -130,9 +118,7 @@ legend('Rocket trajectory','Max Height','Max Range','Location','NorthWest')
 
 %% consider 3d plotting after adjusting velocities of wind and made it 3d
 
-%% consider 3d plotting after adjusting velocities of wind and made it 3d
-
-figure(4) ; 
+figure(3) ; 
 
 plot3(Results(:,7),Results(:,9),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',3)
 hold on
@@ -163,3 +149,4 @@ zlabel('Height (m)')
 view([-30 45]) 
 
 title('3D Flight path')
+

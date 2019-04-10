@@ -2,7 +2,7 @@ clear
 clc
 close all
 
-BW = imread('FINCAN3.png');
+BW = imread('13.png');
 I = imbinarize(BW);
 I2 = rgb2gray(BW);
 I2 = imbinarize(I2);

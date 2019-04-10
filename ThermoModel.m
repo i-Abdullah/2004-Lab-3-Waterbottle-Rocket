@@ -75,7 +75,7 @@ MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
 %% TA'S Launch:
 
-%{
+
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
 Rhoairamb = 0.961; % kg/m^3 ambient air density
@@ -88,7 +88,7 @@ DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 MBottle= 0.17; % kg mass of empty 2-liter bottle with cone and fins
-CD= 0.5; % drag coefficient
+CD= 0.4; % drag coefficient
 Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
 VWaterInit= 0.000962; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
@@ -106,7 +106,9 @@ Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
-%}
+TotalMass0 = 1079e-3 ;
+MassAirInit = TotalMass0 - 962e-3 ;
+
 %% velocity of the wind as initial conditions
 
 % x y z respectively:
@@ -115,8 +117,11 @@ MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 %z = height.
 %y = cross range.
 
-Vwx = 0 ;
-Vwy = 0 ;
+% the following from TA's Launch
+
+[ xwind ywind ] = WindLaunch(204, 'NNW',3);
+Vwx = xwind*0.44704 ; %multiplication to convert from mph to m/s
+Vwy = ywind*0.44704 ;
 Vwz = 0 ;
 
 
@@ -258,16 +263,25 @@ legend('Rocket trajectory','Max Height','Max Range','Location','NorthWest')
 
 figure(3) ; 
 
-plot3(Results(:,7),Results(:,9),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',1.4)
+plot3(Results(:,7),Results(:,9),Results(:,8),'-','Color',[0.25 0.25 0.25],'LineWidth',3)
 hold on
 cord1 = [ -5 -50 0 ];
 cord2 = [ -5 50 0 ];
 cord3 = [ 100 50 0 ];
 cord4 = [ 100 -50 0 ];
 
+img = imread('CUField.jpg');
+
 points = [ cord1' cord2' cord3' cord4' ];
-fill3(points(1,:),points(2,:),points(3,:),'g')
+%fill3(points(1,:),points(2,:),points(3,:),'g')
 alpha(0.2)
+hold on
+%image('CData',img,'XData',[cord1(1) cord2(1) cord3(1) cord4(1)],'YData',[cord1(3) cord2(3) cord3(3) cord4(3)])
+
+surf([0 109.1; 0 109.1],[24.25 24.25; -24.25 -24.25]...
+    ,[0 0; 0 0],...    % Plot the surface
+     'CData',img,...
+     'FaceColor','texturemap');
 
 grid on
 

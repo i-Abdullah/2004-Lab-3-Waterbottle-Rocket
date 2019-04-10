@@ -1,4 +1,4 @@
-function [ derivatives ] = ThermoODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz)
+function [ derivatives ] = ThrustODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,z0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R,Vwx,Vwy,Vwz,Thrust_test,time_test,Mwater_i)
 % This's the ODE45 function for analyzing the water bottle rocket.
 %    Done by:
 %            1- Brendan Palmer, id : 108102169
@@ -94,7 +94,20 @@ else
 end
 
 Pressure = ( ( VAirInit ./ AirVolume ) .^ GammaGas ) .* (Pgage+Pamb) ; 
-Thrust = 2.* Cd .* ThroatArea .* ( Pressure - Pamb) ;
+%Thrust = 2.* Cd .* ThroatArea .* ( Pressure - Pamb) ;
+
+%find first min:
+diff = abs(time_test-Time);
+ind1 = find(diff==min(diff));
+
+% zero and find the second min:
+diff(ind1) = [];
+ind2 = find(diff==min(diff));
+
+
+Thrust = abs((Thrust_test(ind1) + Thrust_test(ind2) ))/2;
+
+
 Drag = ( Rhoairamb / 2) .* (norm(TotalVeloc)).^2 * CD*BottleArea; 
 
 % Define Derivatives
@@ -110,6 +123,8 @@ DVolume_Dt = Cd * ThroatArea * sqrt ( (2/RhoWater) * ( ( (Pgage+Pamb) * (( VAirI
 
 %Mass (how mass of Rocket changes with time, it's )
 DMass_Dt = - Cd .* ThroatArea .* sqrt ( 2.*RhoWater.* ( Pressure - Pamb ) );
+
+%DMass_Dt = -(VWaterInit*RhoWater)
 
 
 derivatives = [ DMass_Dt; 0; DVolume_Dt; dadt_X; dadt_Z; dadt_Y ; dxdt ; dzdt ; dydt ] ;
