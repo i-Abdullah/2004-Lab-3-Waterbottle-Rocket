@@ -80,13 +80,13 @@ area(time(iy1:iy2),data(iy1:iy2,3),'LineStyle','-','FaceAlpha',0.3,'FaceColor','
 
 grid minor
 title('Static test force of thrust')
-ylabel('Time (seconds)')
-xlabel('Thrust (N)')
+xlabel('Time (seconds)')
+ylabel('Thrust (N)')
 
 
 ForceIntg = cumtrapz(time(iy1:iy2),data(iy1:iy2,3)) ; %integral of force
 
-Isp = ForceIntg(end) / (Mwater*g) ;
+Isp = ForceIntg(end) / (Mwater*g)
 DV = Isp*g* log(TotalMass0/(PayLoad + Fins + MBottle)) ; % Change in velocity, assumes it's instantaneous.
 
 

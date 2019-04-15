@@ -4,4 +4,4 @@ function [value,isterminal,direction] = HitGround(Time,States)
 
 value = States(8); % detect when height (stored in 8th state) is =0;
 isterminal= 1; % stop the integration
-direction = -1; % negative direction
+direction = 0; % negative direction
