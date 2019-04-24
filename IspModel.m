@@ -60,15 +60,16 @@ Vwz = 0 ;
 %% ISP:
 
 
-data = load('StaticTestData/LA8am_test6') .* 4.44822   ; % to convert to newton
+data = load('StaticTestData/Group05_08AM_statictes1') .* 4.44822   ; % to convert to newton
 time = linspace(0,length(data)/1652,length(data));
 
 Mwater = VWaterInit*RhoWater;
 
+Mwater = 1;
 
 figure(1)
 
-plot(time,data(:,3),'r.-','LineWidth',0.5)
+plot(time,abs(data(:,3)),'r.-','LineWidth',0.5)
 [ x y ] = ginput(2);
 [ ix1 iy1 ] = min(abs(time - x(1)));
 [ ix2 iy2 ] = min(abs(time - x(2)));
@@ -84,7 +85,7 @@ xlabel('Time (seconds)')
 ylabel('Thrust (N)')
 
 
-ForceIntg = cumtrapz(time(iy1:iy2),data(iy1:iy2,3)) ; %integral of force
+ForceIntg = cumtrapz(time(iy1:iy2),abs(data(iy1:iy2,3))) ; %integral of force
 
 Isp = ForceIntg(end) / (Mwater*g)
 DV = Isp*g* log(TotalMass0/(PayLoad + Fins + MBottle)) ; % Change in velocity, assumes it's instantaneous.
