@@ -13,10 +13,10 @@ clear
 clc
 close all;
 
-%% ODE conditions: Launch 1
+%% ODE conditions: Launch 2
 
 
-%% Launch 1:
+%% Launch 2:
 
 % {
 g = 9.81; % m/s2, acceleration due to gravity,
@@ -31,13 +31,13 @@ DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 MBottle= 0.110; % kg mass of empty 2-liter bottle with cone and fins
-CD= 0.35; % drag coefficient
+CD= 0.324; % drag coefficient
 Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-VWaterInit= 0.0006; % m^3, initial volume of water inside bottle
+VWaterInit= 0.000594 ; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 TAirInit = 290.15; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 45 ; % initial angle of rocket in degress
+Theta= 43 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
 z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
@@ -49,10 +49,10 @@ Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
-TotalMass0 = 694e-3 ;
+TotalMass0 = 704e-3 ;
 %MassAirInit = TotalMass0 - 600e-3 - MBottle  ;
 
-% velocity of the wind as initial conditions
+%% velocity of the wind as initial conditions
 
 % x y z respectively:
 
@@ -62,11 +62,13 @@ TotalMass0 = 694e-3 ;
 
 % the following from TA's Launch
 
-WindSpeed = 9; %mph
-[ xwind ywind ] = WindLaunch(204, 'ENE',WindSpeed);
+WindSpeed = 3;
+
+[ xwind ywind ] = WindLaunch(204, 'SSW',WindSpeed);
 Vwx = xwind*0.44704 ; %multiplication to convert from mph to m/s
 Vwy = ywind*0.44704 ;
 Vwz = 0 ;
+
 
 %initial conditions for ode:
 
@@ -94,12 +96,12 @@ Estimatedy = Results(end,9);
 
 % actual landing from the day of the flight
 
-Actualx = 65;
-Actualy = Actualx * tand(7) ; % 7 is the drift angle, measured the same day.
+Actualx = 61;
+Actualy = Actualx * tand(-12.1/2) ; % 12.1 is the drift angle, measured the same day.
 
 
 Correctedx = Actualx;
-Correctedy = Actualy/(WindSpeed/2) ; % 7 is the drift angle, measured the same day.
+Correctedy = Estimatedy; % 7 is the drift angle, measured the same day.
 
 %% redefine the terms that has uncertintiy
 
@@ -109,11 +111,11 @@ CD = randn(N,1)*0.05 + CD ;
 Pgage = randn(N,1)*2*6894.76 + Pgage ;
 VWaterInit = randn(N,1)*0.00001 + VWaterInit ;
 Theta = randn(N,1)*1 + Theta ;
-WindSpeed = randn(N,1)*1.5 + WindSpeed;
+WindSpeed = randn(N,1)*2 + WindSpeed;
 
 % Now randoamly sample even the 
 
-PossibleWind = { 'ENE' ; 'NE' ; 'NNE' };
+PossibleWind = { 'SSW' ; 'SW' ; 'WSW' };
 
 %% run simulations
 for i=1:N

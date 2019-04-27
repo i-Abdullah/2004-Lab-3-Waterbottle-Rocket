@@ -99,7 +99,7 @@ Actualy = Actualx * tand(7) ; % 7 is the drift angle, measured the same day.
 
 
 Correctedx = Actualx;
-Correctedy = Actualy/(WindSpeed/2) ; % 7 is the drift angle, measured the same day.
+Correctedy = Estimatedy ; % 7 is the drift angle, measured the same day.
 
 %% redefine the terms that has uncertintiy
 

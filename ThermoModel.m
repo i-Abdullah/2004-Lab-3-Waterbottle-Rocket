@@ -75,7 +75,7 @@ MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
 %% Launch 1:
 
-% {
+%{
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
 Rhoairamb = 0.961; % kg/m^3 ambient air density
@@ -128,7 +128,7 @@ Vwz = 0 ;
 
 %% Launch2 :
 
-%{
+% {
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
 Rhoairamb = 0.961; % kg/m^3 ambient air density
@@ -143,11 +143,11 @@ MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 MBottle= 0.110; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.324; % drag coefficient
 Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-VWaterInit= 0.0006 ; % m^3, initial volume of water inside bottle
+VWaterInit= 0.000594 ; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 TAirInit = 290.15; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 45 ; % initial angle of rocket in degress
+Theta= 43 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
 z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
@@ -178,6 +178,8 @@ Vwy = ywind*0.44704 ;
 Vwz = 0 ;
 
 %}
+
+
 %% 
 
 %initial conditions for ode:
