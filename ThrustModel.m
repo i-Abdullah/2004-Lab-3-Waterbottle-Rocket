@@ -6,9 +6,7 @@ close all;
 
 
 %% inital conditions 
-
-% updated conditions:
-
+% {
 g = 9.81; % m/s2, acceleration due to gravity,
 Cd= 0.8; % discharge coefficient
 Rhoairamb = 0.961; % kg/m^3 ambient air density
@@ -20,10 +18,12 @@ DThroat= 2.1; % cm, diameter of throat
 DBottle= 10.5; % in cm, diameter of bottle
 R = 287; %J/kgK, gas constant of air
 MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
-CD= 0.5; % drag coefficient
-Pgage= 50*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-VWaterInit= 0.001; % m^3, initial volume of water inside bottle
+MBottle= 0.110; % kg mass of empty 2-liter bottle with cone and fins
+CD= 0.35; % drag coefficient
+Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
+VWaterInit= 0.0006; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
+TAirInit = 290.15; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
 Theta= 45 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
@@ -37,18 +37,26 @@ Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
-Mwater_i = (VWaterInit*RhoWater);
+TotalMass0 = 694e-3 ;
+%MassAirInit = TotalMass0 - 600e-3 - MBottle  ;
+
 %% velocity of the wind as initial conditions
 
 % x y z respectively:
+
 %x = downrange.
 %z = height.
 %y = cross range.
-Vwx = 0 ;
-Vwy = 10 ;
+
+% the following from TA's Launch
+
+[ xwind ywind ] = WindLaunch(204, 'ENE',9);
+Vwx = xwind*0.44704 ; %multiplication to convert from mph to m/s
+Vwy = ywind*0.44704 ;
 Vwz = 0 ;
 
-%initial conditions for ode:
+ %initial conditions for ode:
+
 VelX0 = 0;
 VelZ0 = 0;
 VelY0 = 0;
@@ -56,6 +64,9 @@ VelY0 = 0;
 x0 = 0;
 z0 = z0;
 y0 = 0; %intial condition for location into the page
+
+
+%}
 
 
 %% read data:
@@ -67,14 +78,14 @@ time_test = linspace(0,length(data)/1652,length(data));
 
 figure(1)
 
-plot(time_test,data(:,3),'r.-','LineWidth',0.5)
+plot(time_test,abs(data(:,3)),'r.-','LineWidth',0.5)
 [ x y ] = ginput(2);
 [ ix1 iy1 ] = min(abs(time_test - x(1)));
 [ ix2 iy2 ] = min(abs(time_test - x(2)));
 
 
 
-Thrust_test = data(iy1:iy2,3);
+Thrust_test = abs(data(iy1:iy2,3));
 time_test = time_test(iy1:iy2);
 % zero time
 time_test = time_test - time_test(1) ;

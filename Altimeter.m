@@ -20,7 +20,7 @@ close all;
 
 %% Launch 1
 
-Data = importdata('LaunchData/Launch1/group5_8am_launch1_processed_smoothed.dms');
+Data = importdata('LaunchResults/Launch1/AltimeterData/group5_8am_launch1_processed_smoothed.dms');
 
 Data = Data.data; % find the structure thing.
 Time = Data(:,1);
