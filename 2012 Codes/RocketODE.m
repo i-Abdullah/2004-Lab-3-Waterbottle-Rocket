@@ -1,9 +1,5 @@
 function [ derivatives ] = RocketODE(Time,States,TestStandLength,Theta,Pgage,Pamb,Cd,ThroatArea,CD,BottleArea,Rhoairamb,RhoWater,Volbottle,y0,VAirInit,GammaGas,g,TAirInit,MassAirInit,R)
 % This's the ODE45 function for analyzing the water bottle rocket.
-%    Done by:
-%            1- Brendan Palmer, id : 108102169
-%            2- Abdulla AlAmeri id : 109364560
-%
 % For more info, read Project2.m .
 % 
 % --------- (Inputs)---------------------------

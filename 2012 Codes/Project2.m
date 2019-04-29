@@ -4,8 +4,8 @@
 
 DateCreated : 19 Nov, 2018.
 - Done by:
-            1- Brendan Palmer, id : 108102169
-            2- Abdulla AlAmeri id : 109364560
+            1- Brendan Palmer
+            2- Abdulla AlAmeri
 
 % This's the main script that will be using numerical inegration to model
 water bottle rocket.
