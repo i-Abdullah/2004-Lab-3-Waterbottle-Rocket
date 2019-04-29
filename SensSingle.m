@@ -283,7 +283,7 @@ line([2e5 2e5],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
 line([4e5 4e5],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
 
 
-legend('Max Range', 'Max Height',['Baseline=' num2str(Pgage)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax)))],...
+legend('Max Range', 'Max Height',['Baseline=' num2str(Pgage) ' Pa'],['Optimal=' num2str(Var(find(max(Xmax)==Xmax))) ' Pa'],...
     'Lowe bound','Upper bound');
 
 title('Gage pressure vs Max Height and Range');
@@ -343,7 +343,7 @@ line([284.5 284.5],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
 line([310 310],[0 80],'LineWidth',2,'Color','k','LineStyle',':');
 
 
-legend('Max Range', 'Max Height',['Baseline=' num2str(TAirInit)],['Optimal=' num2str(Var(find(max(Xmax)==Xmax)))],...
+legend('Max Range', 'Max Height',['Baseline=' num2str(TAirInit) 'K' ],['Optimal=' num2str(Var(find(max(Xmax)==Xmax))) 'K' ],...
     'Lowe bound','Upper bound');
 
 title('Water Temp vs Max Height and Range');

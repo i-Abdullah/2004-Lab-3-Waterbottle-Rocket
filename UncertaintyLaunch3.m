@@ -33,11 +33,11 @@ MBottle= 0.15; % kg mass of empty 2-liter bottle with cone and fins
 MBottle= 0.110; % kg mass of empty 2-liter bottle with cone and fins
 CD= 0.324; % drag coefficient
 Pgage= 40*6894.76; % in pascal, the 6894.76 is to convert. initial gage pressure of air in bottleVolwater,
-VWaterInit= 0.000594 ; % m^3, initial volume of water inside bottle
+VWaterInit= 0.001 ; % m^3, initial volume of water inside bottle
 TAirInit = 300; % K, initial temperature of
 TAirInit = 290.15; % K, initial temperature of
 Airv0 = 0.0 ;% m/s, initial velocity of rocket
-Theta= 43 ; % initial angle of rocket in degress
+Theta= 35 ; % initial angle of rocket in degress
 X0 = 0.0; % in meters, initial horizontal distance
 z0 = 0.25; % in m, initial vertical height
 TestStandLength= 0.5; % in m, length of test stand
@@ -49,7 +49,7 @@ Fins = 0 ;
 TotalMass0 = PayLoad + Fins + MBottle + (VWaterInit*RhoWater) + (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); % Total mass
 MassAirInit = (((Pgage+Pamb)*VAirInit ) / (R*TAirInit)); %initial mass of air
 
-TotalMass0 = 704e-3 ;
+TotalMass0 = MBottle + 1 ;
 %MassAirInit = TotalMass0 - 600e-3 - MBottle  ;
 
 %% velocity of the wind as initial conditions
@@ -64,11 +64,10 @@ TotalMass0 = 704e-3 ;
 
 WindSpeed = 3;
 
-[ xwind ywind ] = WindLaunch(204, 'SSW',WindSpeed);
+[ xwind ywind ] = WindLaunch(204, 'SW',WindSpeed);
 Vwx = xwind*0.44704 ; %multiplication to convert from mph to m/s
 Vwy = ywind*0.44704 ;
 Vwz = 0 ;
-
 
 %initial conditions for ode:
 
@@ -96,8 +95,8 @@ Estimatedy = Results(end,9);
 
 % actual landing from the day of the flight
 
-Actualx = 61;
-Actualy = Actualx * tand(-12.1) ; % 12.1 is the drift angle, measured the same day.
+Actualx = 51;
+Actualy = Actualx * tand(-7) ; % 12.1 is the drift angle, measured the same day.
 
 
 Correctedx = Actualx;
@@ -105,7 +104,7 @@ Correctedy = Estimatedy; % 7 is the drift angle, measured the same day.
 
 %% redefine the terms that has uncertintiy
 
-N = 1000;
+N = 10000;
 
 CD = randn(N,1)*0.05 + CD ;
 Pgage = randn(N,1)*2*6894.76 + Pgage ;
